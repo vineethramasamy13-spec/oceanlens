@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020b14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #143c6d;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(240, 246, 250, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(6, 182, 212, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.08);
+}
+
+.dark .glass-panel {
+  background: rgba(6, 19, 37, 0.72);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-panel-subtle {
+  background: rgba(244, 248, 251, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.dark .glass-panel-subtle {
+  background: rgba(10, 29, 55, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-active {
+  background: rgba(220, 238, 250, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 0 4px 20px -5px rgba(6, 182, 212, 0.15);
+}
+
+.dark .glass-panel-active {
+  background: rgba(13, 40, 76, 0.85);
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
+}
+
+/* Glow Elements */
+.glow-cyan-text {
+  text-shadow: 0 0 16px rgba(6, 182, 212, 0.6);
+}
+
+.glow-teal-text {
+  text-shadow: 0 0 16px rgba(20, 184, 166, 0.6);
+}
+
+.glow-coral-text {
+  text-shadow: 0 0 16px rgba(244, 63, 94, 0.6);
+}
+
+/* Ocean Grid Pattern Background */
+.ocean-grid-bg {
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.1), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(20, 184, 166, 0.05), transparent 35%),
+    radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.04), transparent 40%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+
+.dark .ocean-grid-bg {
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.15), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(20, 184, 166, 0.08), transparent 35%),
+    radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.06), transparent 40%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Custom Leaflet Map Container Tweaks */
+.leaflet-container {
+  background: #020b14 !important;
+  font-family: 'Outfit', sans-serif !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(6, 19, 37, 0.95) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(6, 182, 212, 0.3) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(6, 19, 37, 0.95) !important;
+}
+
+.leaflet-bar a {
+  background-color: #0a1d37 !important;
+  color: #22d3ee !important;
+  border-bottom: 1px solid #143c6d !important;
+}
+.leaflet-bar a:hover {
+  background-color: #143c6d !important;
+  color: #fff !important;
+}
+
+/* Floating Sonar Beacon Pulse */
+@keyframes sonar-wave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+.sonar-wave {
+  animation: sonar-wave 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+/* Print Styling for Ocean Reports */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-clean {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+  }
+}
+
+
+
