@@ -171,6 +171,9 @@ export default function OceanProfileChart({
             <span className="text-xs px-2 py-0.5 rounded font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
               CTD Cast
             </span>
+            <span className="text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-500/15 text-amber-450 border border-amber-500/30">
+              Simulated live drift (representative data)
+            </span>
           </div>
           <p className="text-[11px] text-slate-400">
             {selectedFloat.name} (WMO #{selectedFloat.wmo})

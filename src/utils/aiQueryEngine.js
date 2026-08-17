@@ -9,7 +9,8 @@ import { calculateMLD, calculateThermocline, calculateBarrierLayer } from './oce
 import { fetchLiveRealOceanData } from './realOceanApi';
 import { generateGroqOceanAnalysis } from './groqOceanAI';
 
-export async function processOceanQuery(queryText, previousContext = null) {
+export async function processOceanQuery(queryText, previousContext = null, floatsOverride = null) {
+  const activeFloats = floatsOverride || ARGO_FLOATS;
   const query = queryText.toLowerCase().trim();
   
   // 1. Detect Variable
@@ -141,18 +142,18 @@ export async function processOceanQuery(queryText, previousContext = null) {
   }
 
   // 4. Retrieve Floats for active regions
-  const primaryFloats = ARGO_FLOATS.filter(f => f.regionId === regionId);
+  const primaryFloats = activeFloats.filter(f => f.regionId === regionId);
   const selectedFloat = specificLocation 
     ? (primaryFloats.find(f => f.name.toLowerCase().includes(specificLocation.toLowerCase().slice(0, 6))) || primaryFloats[0])
     : primaryFloats[0];
 
   if (!selectedFloat) {
     // Fallback to first available float
-    const fallback = ARGO_FLOATS[0];
-    return processOceanQuery(queryText.replace(/(arctic|barents|circumpolar)/gi, 'bay of bengal'), previousContext);
+    const fallback = activeFloats[0];
+    return processOceanQuery(queryText.replace(/(arctic|barents|circumpolar)/gi, 'bay of bengal'), previousContext, floatsOverride);
   }
 
-  const comparisonFloats = isComparison && compareRegionId ? ARGO_FLOATS.filter(f => f.regionId === compareRegionId) : [];
+  const comparisonFloats = isComparison && compareRegionId ? activeFloats.filter(f => f.regionId === compareRegionId) : [];
   const compareFloat = comparisonFloats[0] || null;
 
   const targetRegionMeta = ARGO_REGIONS.find(r => r.id === regionId) || ARGO_REGIONS[0];

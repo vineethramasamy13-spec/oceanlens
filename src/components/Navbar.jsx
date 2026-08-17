@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
 import { Menu, X, Compass, Waves, Map as MapIcon, Database, FileText, Info, Radio, Activity, Sparkles, MessageSquare } from 'lucide-react';
 import { useTranslation } from '../utils/translations';
+import { useConnectionStatus } from '../utils/realOceanApi';
 
 export default function Navbar({ activePage, setActivePage, activeFloatsCount = 8, onQuickReport }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t, lang, setLanguage } = useTranslation();
+  const statusInfo = useConnectionStatus();
+
+  const getStatusColor = () => {
+    if (statusInfo.status === 'live') return 'bg-emerald-500';
+    if (statusInfo.status === 'fallback') return 'bg-amber-500';
+    return 'bg-slate-500';
+  };
+
+  const getStatusText = () => {
+    if (statusInfo.status === 'live') return lang === 'en' ? 'Live Stream' : 'लाइव स्ट्रीम';
+    if (statusInfo.status === 'fallback') return lang === 'en' ? 'Estimated (Offline)' : 'अनुमानित (ऑफ़लाइन)';
+    return lang === 'en' ? 'Connecting...' : 'कनेक्ट हो रहा है...';
+  };
 
   const navItems = [
     { id: 'ai-explorer', label: t('nav_explorer'), icon: Sparkles, badge: 'Core' },
@@ -79,15 +93,27 @@ export default function Navbar({ activePage, setActivePage, activeFloatsCount = 
  
           {/* Controls & Quick Actions (Desktop) */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Live Telemetry Status */}
-            <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-ocean-900 border border-slate-200 dark:border-cyan-500/20 text-xs text-slate-600 dark:text-slate-300">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+           {/* Live Ticker Widget (Task 4) */}
+            <div className="hidden xl:flex items-center gap-2.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-ocean-900 border border-slate-200 dark:border-cyan-500/20 text-xs text-slate-300 select-none">
+              <span className="relative flex h-2 w-2 shrink-0">
+                {statusInfo.status !== 'unknown' && (
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                    statusInfo.status === 'live' ? 'bg-emerald-400' : 'bg-amber-400'
+                  }`}></span>
+                )}
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${getStatusColor()}`}></span>
               </span>
-              <span className="font-mono text-cyan-600 dark:text-cyan-300 font-semibold">{activeFloatsCount} {lang === 'en' ? 'Floats' : 'फ्लोट्स'}</span>
-              <span className="text-slate-400 dark:text-slate-500">|</span>
-              <span className="text-teal-600 dark:text-teal-400 font-mono text-[11px]">{lang === 'en' ? 'QC Active' : 'सत्यापित'}</span>
+              <div className="flex flex-col text-[10px] leading-tight shrink-0">
+                <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>{getStatusText()}</span>
+                  <span className="text-slate-450 dark:text-slate-500 font-normal">({statusInfo.source})</span>
+                </span>
+                <span className="font-mono text-slate-550 dark:text-slate-400 text-[8.5px] mt-0.5">
+                  {statusInfo.timestamp 
+                    ? `${lang === 'en' ? 'Last Fetch' : 'अंतिम फ़ेच'}: ${new Date(statusInfo.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                    : (lang === 'en' ? 'No API calls made yet' : 'कोई एपीआई कॉल नहीं')}
+                </span>
+              </div>
             </div>
 
             {/* Bilingual Translation Switcher */}
@@ -139,6 +165,28 @@ export default function Navbar({ activePage, setActivePage, activeFloatsCount = 
       {/* Mobile Dropdown Panel */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-ocean-950/95 py-3 px-3 flex flex-col gap-1.5 animate-in slide-in-from-top-4 duration-150 relative z-40 backdrop-blur-md">
+          {/* Mobile Connection Ticker Widget (Task 4) */}
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 dark:bg-ocean-900 border border-slate-200 dark:border-slate-800 text-[10px] text-slate-350 mb-1 select-none">
+            <span className="relative flex h-2 w-2 shrink-0">
+              {statusInfo.status !== 'unknown' && (
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  statusInfo.status === 'live' ? 'bg-emerald-400' : 'bg-amber-400'
+                }`}></span>
+              )}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${getStatusColor()}`}></span>
+            </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-slate-700 dark:text-slate-250">
+                {getStatusText()} <span className="text-[9px] text-slate-500 font-normal">({statusInfo.source})</span>
+              </span>
+              <span className="text-slate-550 dark:text-slate-450 font-mono text-[9px] mt-0.5">
+                {statusInfo.timestamp 
+                  ? `${lang === 'en' ? 'Last Fetch' : 'अंतिम फ़ेच'}: ${new Date(statusInfo.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                  : (lang === 'en' ? 'No API calls' : 'कोई एपीआई कॉल नहीं')}
+              </span>
+            </div>
+          </div>
+
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;

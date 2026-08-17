@@ -11,8 +11,9 @@ import SonarAcousticRefractor from '../components/SonarAcousticRefractor';
 import { ARGO_FLOATS } from '../data/argoDataset';
 import { processOceanQuery } from '../utils/aiQueryEngine';
 import { useTranslation } from '../utils/translations';
+import { fetchLiveRealOceanData } from '../utils/realOceanApi';
 
-export default function AiExplorer({ onSelectFloatGlobal }) {
+export default function AiExplorer({ onSelectFloatGlobal, floats = ARGO_FLOATS }) {
   const { t, lang } = useTranslation();
   const [currentQuery, setCurrentQuery] = useState('Show temperature in Bay of Bengal');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,14 +24,68 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [activeVisualizerTab, setActiveVisualizerTab] = useState('physical');
+  const [lastFetchTime, setLastFetchTime] = useState(new Date());
+  const [secondsSinceUpdate, setSecondsSinceUpdate] = useState(0);
+
+  // Sync loaded float coordinates dynamically from background drift (Task 2)
+  useEffect(() => {
+    if (!analysisResult) return;
+    const currentFloat = floats.find(f => f.wmo === analysisResult.selectedFloat?.wmo);
+    const currentCompareFloat = analysisResult.compareFloat ? floats.find(f => f.wmo === analysisResult.compareFloat?.wmo) : null;
+    if (currentFloat) {
+      setAnalysisResult(prev => ({
+        ...prev,
+        selectedFloat: currentFloat,
+        compareFloat: currentCompareFloat
+      }));
+    }
+  }, [floats]);
+
+  // Live Update Timer (Task 1)
+  useEffect(() => {
+    setSecondsSinceUpdate(0);
+    const interval = setInterval(() => {
+      setSecondsSinceUpdate(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lastFetchTime]);
+
+  const handleRefreshLive = async () => {
+    if (!analysisResult || !analysisResult.selectedFloat) return;
+    setIsLoading(true);
+    setSearchError(null);
+    try {
+      const liveData = await fetchLiveRealOceanData(analysisResult.selectedFloat.lat, analysisResult.selectedFloat.lon);
+      setAnalysisResult(prev => ({
+        ...prev,
+        liveEarthData: liveData
+      }));
+      setLastFetchTime(new Date());
+    } catch (e) {
+      console.error(e);
+      setSearchError(e.message || 'Failed to refresh live ocean data.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 5-minute Polling Refresh (Task 1)
+  useEffect(() => {
+    if (!analysisResult || !analysisResult.selectedFloat) return;
+    const interval = setInterval(() => {
+      handleRefreshLive();
+    }, 300000); // 5 minutes
+    return () => clearInterval(interval);
+  }, [analysisResult?.selectedFloat?.wmo]);
 
   // Initialize query on mount
   useEffect(() => {
     let isMounted = true;
-    processOceanQuery('Show temperature in Bay of Bengal').then(result => {
+    processOceanQuery('Show temperature in Bay of Bengal', null, floats).then(result => {
       if (isMounted) {
         setAnalysisResult(result);
         setActiveVariable(result.variable || 'temperature');
+        setLastFetchTime(new Date());
       }
     });
     return () => { isMounted = false; };
@@ -42,7 +97,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
     setCurrentQuery(queryText);
 
     try {
-      const result = await processOceanQuery(queryText, analysisResult);
+      const result = await processOceanQuery(queryText, analysisResult, floats);
       setAnalysisResult(result);
       setActiveVariable(result.variable || 'temperature');
     } catch (err) {
@@ -59,7 +114,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
     setIsLoading(true);
     setSearchError(null);
     try {
-      const updated = await processOceanQuery(`Show ${newVar} in ${analysisResult.regionName}`, analysisResult);
+      const updated = await processOceanQuery(`Show ${newVar} in ${analysisResult.regionName}`, analysisResult, floats);
       setAnalysisResult(updated);
     } catch (e) {
       console.error(e);
@@ -74,7 +129,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
     setIsLoading(true);
     setSearchError(null);
     try {
-      const updated = await processOceanQuery(`Show ${activeVariable} for float #${float.wmo} in ${float.region}`, analysisResult);
+      const updated = await processOceanQuery(`Show ${activeVariable} for float #${float.wmo} in ${float.region}`, analysisResult, floats);
       setAnalysisResult(updated);
       if (onSelectFloatGlobal) onSelectFloatGlobal(float);
     } catch (e) {
@@ -122,7 +177,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
             <OceanMap
               selectedFloat={analysisResult.selectedFloat}
               compareFloat={analysisResult.compareFloat}
-              allFloats={ARGO_FLOATS}
+              allFloats={floats}
               activeRegionId={analysisResult.regionId}
               onSelectFloat={handleSelectFloat}
               height="440px"
@@ -210,6 +265,9 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
               onOpenDataTable={() => setIsDataTableOpen(true)}
               showTSDiagram={showTSDiagram}
               onToggleTSDiagram={() => setShowTSDiagram(!showTSDiagram)}
+              onRefreshLive={handleRefreshLive}
+              secondsSinceUpdate={secondsSinceUpdate}
+              isLoading={isLoading}
             />
           </div>
 

@@ -3,7 +3,7 @@ import { ARGO_FLOATS, ARGO_REGIONS } from '../data/argoDataset';
 import { Database, Filter, Download, FileCode, Check, Search, Sliders, RefreshCw, Eye } from 'lucide-react';
 import DataTableModal from '../components/DataTableModal';
 
-export default function DataExplorer() {
+export default function DataExplorer({ floats = ARGO_FLOATS }) {
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [maxDepthFilter, setMaxDepthFilter] = useState(2000);
   const [tempMin, setTempMin] = useState(0);
@@ -12,7 +12,7 @@ export default function DataExplorer() {
   const [inspectFloat, setInspectFloat] = useState(null);
 
   // Flatten all float profile observations
-  const allObservations = ARGO_FLOATS.flatMap(float => 
+  const allObservations = floats.flatMap(float => 
     float.profile.map(p => ({
       ...p,
       floatWmo: float.wmo,

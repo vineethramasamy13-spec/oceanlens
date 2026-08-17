@@ -4,12 +4,14 @@ import OceanProfileChart from '../components/OceanProfileChart';
 import { ARGO_FLOATS, ARGO_REGIONS } from '../data/argoDataset';
 import { Radio, Search, Filter, Compass, Layers, Activity, ChevronRight, Info, Eye } from 'lucide-react';
 
-export default function OceanMapView() {
-  const [selectedFloat, setSelectedFloat] = useState(ARGO_FLOATS[0]);
+export default function OceanMapView({ floats = ARGO_FLOATS }) {
+  const [selectedFloatWmo, setSelectedFloatWmo] = useState(ARGO_FLOATS[0].wmo);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegionId, setSelectedRegionId] = useState('bay_of_bengal');
 
-  const filteredFloats = ARGO_FLOATS.filter(f => 
+  const selectedFloat = floats.find(f => f.wmo === selectedFloatWmo) || floats[0];
+
+  const filteredFloats = floats.filter(f => 
     f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     f.wmo.includes(searchQuery) ||
     f.region.toLowerCase().includes(searchQuery.toLowerCase())
@@ -17,8 +19,8 @@ export default function OceanMapView() {
 
   const handleRegionSelect = (regionId) => {
     setSelectedRegionId(regionId);
-    const floatInRegion = ARGO_FLOATS.find(f => f.regionId === regionId);
-    if (floatInRegion) setSelectedFloat(floatInRegion);
+    const floatInRegion = floats.find(f => f.regionId === regionId);
+    if (floatInRegion) setSelectedFloatWmo(floatInRegion.wmo);
   };
 
   return (
@@ -33,8 +35,9 @@ export default function OceanMapView() {
               Global ARGO Float Fleet Telemetry
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Real-time positioning and 10-day CTD dive trajectory tracking across ocean basins.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
+            <span>Float trajectory tracking across ocean basins.</span>
+            <span className="bg-amber-500/15 text-amber-450 border border-amber-500/30 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono">Simulated live drift (representative data)</span>
           </p>
         </div>
 
@@ -65,9 +68,9 @@ export default function OceanMapView() {
         <div className="lg:col-span-8 space-y-4">
           <OceanMap
             selectedFloat={selectedFloat}
-            allFloats={ARGO_FLOATS}
+            allFloats={floats}
             activeRegionId={selectedRegionId}
-            onSelectFloat={(float) => setSelectedFloat(float)}
+            onSelectFloat={(float) => setSelectedFloatWmo(float.wmo)}
             height="560px"
           />
 
@@ -125,7 +128,7 @@ export default function OceanMapView() {
                   <div
                     key={float.wmo}
                     onClick={() => {
-                      setSelectedFloat(float);
+                      setSelectedFloatWmo(float.wmo);
                       setSelectedRegionId(float.regionId);
                     }}
                     className={`p-3 rounded-xl cursor-pointer transition-all border ${

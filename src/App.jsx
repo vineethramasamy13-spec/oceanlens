@@ -8,21 +8,75 @@ import OceanReports from './pages/OceanReports';
 import AboutArgo from './pages/AboutArgo';
 import ReportGeneratorModal from './components/ReportGeneratorModal';
 import { processOceanQuery } from './utils/aiQueryEngine';
-import { Waves, Heart, Radio, ShieldCheck, Github } from 'lucide-react';
+import { ARGO_FLOATS } from './data/argoDataset';
+import { ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [activePage, setActivePage] = useState('ai-explorer');
   const [isQuickReportOpen, setIsQuickReportOpen] = useState(false);
   const [quickReportAnalysis, setQuickReportAnalysis] = useState(null);
+  const [argoFloats, setArgoFloats] = useState(ARGO_FLOATS);
 
   useEffect(() => {
     // Add default dark mode class on mount
     document.documentElement.classList.add('dark');
   }, []);
 
+  // Background Live Drift Simulation (Task 2)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setArgoFloats(prevFloats => {
+        return prevFloats.map(float => {
+          // Plausible drift nudge along current coordinates: ±0.003 degrees
+          const latNudge = (Math.random() - 0.5) * 0.006;
+          const lonNudge = (Math.random() - 0.5) * 0.006;
+          
+          const newLat = Number((float.lat + latNudge).toFixed(4));
+          const newLon = Number((float.lon + lonNudge).toFixed(4));
+
+          // Nudge active trajectory endpoint
+          let updatedTrajectory = [...(float.trajectory || [])];
+          if (updatedTrajectory.length > 0) {
+            const lastIdx = updatedTrajectory.length - 1;
+            updatedTrajectory[lastIdx] = {
+              ...updatedTrajectory[lastIdx],
+              lat: newLat,
+              lon: newLon
+            };
+          }
+
+          // Fluctuate upper layer CTD sensors slightly (temp: ±0.04°C, salinity: ±0.01 PSU, oxygen: ±0.4)
+          const updatedProfile = float.profile.map((p, idx) => {
+            if (idx < 6) { // Only fluctuate the top 6 layers (depth <= 100m)
+              const tempVar = (Math.random() - 0.5) * 0.08;
+              const salVar = (Math.random() - 0.5) * 0.02;
+              const o2Var = (Math.random() - 0.5) * 0.8;
+              return {
+                ...p,
+                temp: Number((p.temp + tempVar).toFixed(2)),
+                salinity: Number((p.salinity + salVar).toFixed(3)),
+                oxygen: Number((p.oxygen + o2Var).toFixed(1))
+              };
+            }
+            return p;
+          });
+
+          return {
+            ...float,
+            lat: newLat,
+            lon: newLon,
+            trajectory: updatedTrajectory,
+            profile: updatedProfile
+          };
+        });
+      });
+    }, 35000); // 35 seconds drift
+    return () => clearInterval(interval);
+  }, []);
+
   const handleOpenQuickReport = async () => {
     try {
-      const result = await processOceanQuery("Show temperature and salinity in Bay of Bengal");
+      const result = await processOceanQuery("Show temperature and salinity in Bay of Bengal", null, argoFloats);
       setQuickReportAnalysis(result);
       setIsQuickReportOpen(true);
     } catch (e) {
@@ -45,11 +99,11 @@ export default function App() {
 
       {/* Main Dynamic Page Content */}
       <main className={`flex-1 ${activePage === 'ai-chatbot' ? 'flex flex-col min-h-0 overflow-hidden' : ''}`}>
-        {activePage === 'ai-explorer' && <AiExplorer />}
+        {activePage === 'ai-explorer' && <AiExplorer floats={argoFloats} />}
         {activePage === 'ai-chatbot' && <AiChat />}
-        {activePage === 'ocean-map' && <OceanMapView />}
-        {activePage === 'data-explorer' && <DataExplorer />}
-        {activePage === 'ocean-reports' && <OceanReports />}
+        {activePage === 'ocean-map' && <OceanMapView floats={argoFloats} />}
+        {activePage === 'data-explorer' && <DataExplorer floats={argoFloats} />}
+        {activePage === 'ocean-reports' && <OceanReports floats={argoFloats} />}
         {activePage === 'about-argo' && <AboutArgo />}
       </main>
 

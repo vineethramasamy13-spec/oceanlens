@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Sparkles, ShieldCheck, FileText, Database, ArrowRight, Activity, Info, CheckCircle2, ChevronRight, Layers, Radio, Waves, Wind } from 'lucide-react';
+import { AlertTriangle, Sparkles, ShieldCheck, FileText, Database, ArrowRight, Activity, Info, CheckCircle2, ChevronRight, Layers, Radio, Waves, Wind, RefreshCw } from 'lucide-react';
 import { calculateTCHP, calculateENSOAnomaly } from '../utils/oceanPhysics';
 import { analyzeOceanAnomalies } from '../utils/oceanAnomalies';
 import { useTranslation } from '../utils/translations';
@@ -9,7 +9,10 @@ export default function AiInsightCard({
   onOpenReport, 
   onOpenDataTable,
   showTSDiagram,
-  onToggleTSDiagram 
+  onToggleTSDiagram,
+  onRefreshLive,
+  secondsSinceUpdate = 0,
+  isLoading = false
 }) {
   if (!analysisResult) return null;
 
@@ -117,30 +120,52 @@ export default function AiInsightCard({
 
       {/* Live Earth Telemetry Strip (Real satellite conditions) */}
       {liveEarthData && (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs font-mono">
-          <div className="flex items-center gap-2 text-cyan-300 font-semibold">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
-            </span>
-            <span>Live Earth Satellite Stream</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs font-mono w-full">
+          <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+            <div className="flex items-center gap-2 text-cyan-300 font-semibold">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  liveEarthData.isLive ? 'bg-cyan-400' : 'bg-amber-400'
+                }`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  liveEarthData.isLive ? 'bg-cyan-500' : 'bg-amber-500'
+                }`}></span>
+              </span>
+              <span>{liveEarthData.isLive ? 'Live Earth Satellite Stream' : 'Calibrated Satellite Estimates'}</span>
+            </div>
+
+            {/* Polling Timer & Refresh Button */}
+            <div className="flex items-center gap-2 text-[10px] text-slate-400">
+              <span className="text-slate-500">
+                {secondsSinceUpdate < 60
+                  ? `${secondsSinceUpdate}s ago`
+                  : `${Math.floor(secondsSinceUpdate / 60)}m ago`}
+              </span>
+              <button
+                type="button"
+                onClick={onRefreshLive}
+                disabled={isLoading}
+                title="Refresh Live Data"
+                className="p-1 rounded bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
+                aria-label="Refresh Live Data"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-slate-300 text-[11px]">
+          <div className="flex flex-wrap items-center gap-4 text-slate-350 text-[11px] w-full sm:w-auto">
             <div>
-              <span className="text-slate-500 mr-1">Live SST:</span>
+              <span className="text-slate-500 mr-1">SST:</span>
               <strong className="text-cyan-400">{liveEarthData.sst}°C</strong>
             </div>
             <div>
-              <span className="text-slate-500 mr-1">Wave Ht:</span>
+              <span className="text-slate-500 mr-1">Waves:</span>
               <strong className="text-teal-400">{liveEarthData.waveHeight}m</strong>
             </div>
             <div>
               <span className="text-slate-500 mr-1">Current:</span>
               <strong className="text-blue-400">{liveEarthData.currentVelocity} km/h @ {liveEarthData.currentDirection}°</strong>
-            </div>
-            <div className="text-[10px] text-slate-400">
-              UTC {new Date(liveEarthData.timestamp).toLocaleTimeString()}
             </div>
           </div>
         </div>

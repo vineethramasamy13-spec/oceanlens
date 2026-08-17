@@ -290,8 +290,8 @@ export default function AboutArgo() {
             <div className="space-y-3 text-xs text-slate-350 leading-relaxed font-sans">
               <p>
                 {lang === 'en'
-                  ? 'All coordinates, float identification codes (WMO), and deep vertical profiles in this app are seeded representative hydrographic casts derived from official INCOIS Argo global data assemblies.'
-                  : 'इस ऐप में सभी निर्देशांक, फ्लोट पहचान कोड (WMO), और गहरी ऊर्ध्वाधर प्रोफाइल आधिकारिक INCOIS आरगो डेटासेट से प्राप्त सीडेड प्रतिनिधि प्रोफाइल हैं।'}
+                  ? 'Live marine conditions (SST, waves, currents) are fetched in real time from Open-Meteo. ARGO float trajectories are simulated with realistic drift patterns for demonstration; live INCOIS/GDAC float integration is a planned next step.'
+                  : 'लाइव समुद्री स्थितियां (SST, तरंगें, धाराएं) ओपन-मेटीओ से वास्तविक समय में प्राप्त की जाती हैं। आरगो फ्लोट प्रक्षेप पथों को प्रदर्शन के लिए वास्तविक बहाव पैटर्न के साथ अनुकरण किया जाता है; लाइव INCOIS/GDAC फ्लोट एकीकरण एक नियोजित अगला कदम है।'}
               </p>
               <div className="bg-purple-950/20 border border-purple-500/30 p-3 rounded-lg text-[11px] font-mono text-purple-300">
                 <strong>{lang === 'en' ? 'Academic Source Ref' : 'अकादमिक स्रोत संदर्भ'}:</strong>

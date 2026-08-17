@@ -4,6 +4,8 @@
  * API: api.groq.com | Model: llama3-70b-8192
  */
 
+import { fetchLiveRealOceanData, OCEAN_GEO_REGIONS } from './realOceanApi';
+
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile';
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
@@ -164,6 +166,55 @@ export async function generateGeneralChatResponse(messages) {
     };
   }
 
+  let liveContext = '';
+  const lastUserMsg = messages[messages.length - 1]?.content || '';
+  const text = lastUserMsg.toLowerCase();
+  
+  let matchedRegionKey = null;
+  for (const key of Object.keys(OCEAN_GEO_REGIONS)) {
+    const region = OCEAN_GEO_REGIONS[key];
+    const regionName = region.name.toLowerCase();
+    const shortName = key.replace(/_/g, ' ');
+    if (text.includes(regionName) || text.includes(shortName) || text.includes(key.toLowerCase())) {
+      matchedRegionKey = key;
+      break;
+    }
+  }
+
+  if (matchedRegionKey) {
+    const region = OCEAN_GEO_REGIONS[matchedRegionKey];
+    try {
+      // 8-second fetch with retry inside API client
+      const liveData = await fetchLiveRealOceanData(region.lat, region.lon);
+      if (liveData && liveData.success && liveData.isLive) {
+        liveContext = `
+[LIVE ENVIRONMENTAL SATELLITE READINGS FOR ${region.name.toUpperCase()}]:
+- Coordinates: ${region.lat}°N, ${region.lon}°E
+- Sea Surface Temperature (SST): ${liveData.sst}°C (Measured via NOAA OISST / Copernicus Marine)
+- Significant Wave Height: ${liveData.waveHeight} meters
+- Ocean Currents: Velocity = ${liveData.currentVelocity} km/h (Direction = ${liveData.currentDirection}°)
+- API Status: Live feed flowing
+
+Use these active satellite values to answer the user query about this region. Cite the live Open-Meteo / Copernicus data values directly.
+`;
+      } else {
+        // Honest fallback warning
+        liveContext = `
+[LIVE ENVIRONMENTAL DATA UNREACHABLE FOR ${region.name.toUpperCase()}]:
+- Active network request timed out or returned an empty response.
+- CRITICAL: You must explicitly state to the user in your response: "Live data unavailable right now — showing estimated typical conditions for this region."
+- Fallback typical estimates for this region: SST = 29.4°C, Wave Height = 1.3m, Currents = 1.2 km/h. Do NOT represent these estimates as live real-time values.
+`;
+      }
+    } catch (err) {
+      liveContext = `
+[LIVE ENVIRONMENTAL DATA UNREACHABLE FOR ${region.name.toUpperCase()}]:
+- Fetch error occurred: ${err.message}
+- CRITICAL: You must explicitly state to the user in your response: "Live data unavailable right now — showing estimated typical conditions for this region."
+`;
+    }
+  }
+
   try {
     const response = await fetch(GROQ_BASE_URL, {
       method: 'POST',
@@ -179,7 +230,8 @@ export async function generateGeneralChatResponse(messages) {
             content: `You are OceanLens AI — a world-class oceanography expert and interactive AI assistant. 
 You are friendly, helpful, and mathematically and scientifically rigorous. 
 While your primary specialty is Earth's physical oceanography, marine biology, atmospheric dynamics, and the ARGO Float global network, you are fully capable of answering ANY and ALL questions on any topic (including general programming, math, science, history, etc.) with style, clarity, and precision.
-Format your responses using clean markdown (bold, italic, lists, code blocks, or inline LaTeX if helpful).`
+Format your responses using clean markdown (bold, italic, lists, code blocks, or inline LaTeX if helpful).
+${liveContext ? `\n${liveContext}` : ''}`
           },
           ...messages
         ],
