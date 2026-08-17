@@ -9,8 +9,59 @@ export default function OceanProfileChart({
   onVariableChange,
   title
 }) {
-  const [hoverDepth, setHoverDepth] = useState(null);
+  const [hoverPoint, setHoverPoint] = useState(null);
   const [depthScale, setDepthScale] = useState('full'); // 'full' (0-2000m) or 'upper' (0-250m)
+
+  // Handle interactive coordinates mapping on hover
+  const handleMouseMove = (e) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    
+    // Get cursor offset relative to canvas bounds
+    const clientX = e.clientX - rect.left;
+    const clientY = e.clientY - rect.top;
+    
+    // Convert to SVG viewbox coordinates (520x380)
+    const x = (clientX / rect.width) * svgWidth;
+    const y = (clientY / rect.height) * svgHeight;
+    
+    const plotY = y - margin.top;
+    if (plotY < 0 || plotY > plotHeight) {
+      setHoverPoint(null);
+      return;
+    }
+    
+    const depthRatio = plotY / plotHeight;
+    const hoverDepthVal = depthRatio * maxViewDepth;
+    
+    // Find closest CTD depth measurement
+    let closestPoint = null;
+    let minDiff = Infinity;
+    
+    filteredPrimary.forEach(pt => {
+      const diff = Math.abs(pt.depth - hoverDepthVal);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestPoint = pt;
+      }
+    });
+
+    if (closestPoint) {
+      const compPoint = filteredCompare ? filteredCompare.find(p => p.depth === closestPoint.depth) : null;
+      setHoverPoint({
+        primary: closestPoint,
+        compare: compPoint,
+        x: getX(closestPoint[activeVariable]),
+        y: getY(closestPoint.depth),
+        compX: compPoint ? getX(compPoint[activeVariable]) : null,
+        compY: compPoint ? getY(compPoint.depth) : null
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoverPoint(null);
+  };
 
   const variables = [
     { id: 'temperature', label: 'Temperature', unit: '°C', min: 0, max: 32, icon: '🌡️' },
@@ -149,7 +200,9 @@ export default function OceanProfileChart({
       <div className="relative w-full flex items-center justify-center my-2 select-none overflow-hidden">
         <svg 
           viewBox={`0 0 ${svgWidth} ${svgHeight}`} 
-          className="w-full h-auto max-h-[340px]"
+          className="w-full h-auto max-h-[340px] cursor-crosshair"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         >
           <defs>
             {/* Thermocline Band Gradient */}
@@ -353,7 +406,88 @@ export default function OceanProfileChart({
             />
           ))}
 
+          {/* Active Hover guidelines & circles */}
+          {hoverPoint && (
+            <g>
+              <line
+                x1={margin.left}
+                y1={hoverPoint.y}
+                x2={margin.left + plotWidth}
+                y2={hoverPoint.y}
+                stroke="rgba(34, 211, 238, 0.45)"
+                strokeWidth="1"
+                strokeDasharray="3,3"
+              />
+              
+              <circle
+                cx={hoverPoint.x}
+                cy={hoverPoint.y}
+                r="7"
+                fill="none"
+                stroke="#06b6d4"
+                strokeWidth="1.5"
+                className="animate-ping"
+              />
+              <circle
+                cx={hoverPoint.x}
+                cy={hoverPoint.y}
+                r="4.5"
+                fill="#22d3ee"
+                stroke="#020b14"
+                strokeWidth="1"
+              />
+
+              {hoverPoint.compare && (
+                <g>
+                  <circle
+                    cx={hoverPoint.compX}
+                    cy={hoverPoint.compY}
+                    r="7"
+                    fill="none"
+                    stroke="#f43f5e"
+                    strokeWidth="1.5"
+                    className="animate-ping"
+                  />
+                  <circle
+                    cx={hoverPoint.compX}
+                    cy={hoverPoint.compY}
+                    r="4.5"
+                    fill="#f43f5e"
+                    stroke="#020b14"
+                    strokeWidth="1"
+                  />
+                </g>
+              )}
+            </g>
+          )}
+
         </svg>
+
+        {/* Floating Glass Tooltip overlay */}
+        {hoverPoint && (
+          <div 
+            className="absolute z-35 p-2.5 rounded-xl border border-cyan-500/35 bg-slate-950/95 text-[10px] font-mono shadow-2xl space-y-1 backdrop-blur-md pointer-events-none transition-all duration-75 select-none"
+            style={{ 
+              left: `${Math.max(margin.left + 5, Math.min(plotWidth + margin.left - 135, hoverPoint.x - 60))}px`,
+              top: `${Math.max(margin.top + 5, Math.min(plotHeight + margin.top - 80, hoverPoint.y - 85))}px` 
+            }}
+          >
+            <div className="text-cyan-400 font-bold border-b border-slate-800 pb-1 flex justify-between gap-4">
+              <span>Depth:</span>
+              <span>{hoverPoint.primary.depth}m</span>
+            </div>
+            <div className="flex justify-between gap-4 pt-0.5">
+              <span className="text-slate-400">Primary:</span>
+              <strong className="text-white">{hoverPoint.primary[activeVariable]} {currentVarConfig.unit}</strong>
+            </div>
+            {hoverPoint.compare && (
+              <div className="flex justify-between gap-4 text-rose-400 pt-0.5 border-t border-slate-900">
+                <span>Compare:</span>
+                <strong>{hoverPoint.compare[activeVariable]} {currentVarConfig.unit}</strong>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Profile Metrics Bar */}

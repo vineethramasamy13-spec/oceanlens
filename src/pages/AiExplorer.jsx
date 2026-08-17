@@ -112,8 +112,16 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
           </div>
 
           {/* Right Column: Depth Profile Graph & AI Insight */}
-          <div className="lg:col-span-7 flex flex-col space-y-6">
+          <div className={`lg:col-span-7 flex flex-col space-y-6 transition-all duration-300 ${
+            isLoading ? 'opacity-60 pointer-events-none' : ''
+          }`}>
             
+            {isLoading && (
+              <div className="w-full h-1 bg-slate-900/80 rounded-full overflow-hidden relative border border-slate-800">
+                <div className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-cyan-500 to-teal-400 w-full shimmer-glow"></div>
+              </div>
+            )}
+
             {/* Exploration Focus Tabs */}
             <div className="flex p-1 bg-ocean-900/60 dark:bg-ocean-950/60 border border-slate-800 rounded-xl text-xs gap-1">
               <button
@@ -181,12 +189,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
 
         </div>
       ) : (
-        <div className="flex items-center justify-center p-12 glass-panel rounded-2xl text-cyan-400">
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
-            <span>Connecting to ARGO Global Ocean Observing System & Real-Time Satellite Feed...</span>
-          </div>
-        </div>
+        <DashboardSkeleton />
       )}
 
       {/* Data Table Modal */}
@@ -208,6 +211,72 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
         />
       )}
 
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Left Column Skeleton */}
+      <div className="lg:col-span-5 flex flex-col space-y-4">
+        {/* Map Placeholder */}
+        <div className="w-full h-[440px] rounded-2xl border border-slate-800 bg-ocean-950/40 relative overflow-hidden flex flex-col items-center justify-center space-y-3">
+          <div className="absolute inset-0 shimmer-glow opacity-30"></div>
+          <div className="w-12 h-12 rounded-full border-2 border-cyan-500/20 flex items-center justify-center text-cyan-400/45 text-xl font-bold relative z-10 animate-bounce">
+            🗺️
+          </div>
+          <span className="text-[11px] font-mono text-slate-500 tracking-wider uppercase relative z-10">Initializing Geo-Spatial Map...</span>
+        </div>
+        {/* T-S space toggle */}
+        <div className="h-24 rounded-2xl border border-slate-800 bg-ocean-950/20 relative overflow-hidden">
+          <div className="absolute inset-0 shimmer-glow opacity-10"></div>
+        </div>
+      </div>
+
+      {/* Right Column Skeleton */}
+      <div className="lg:col-span-7 flex flex-col space-y-6">
+        {/* Tabs Bar */}
+        <div className="h-10 rounded-xl bg-ocean-900/40 border border-slate-800/80 p-1 flex gap-1">
+          <div className="flex-1 rounded-lg bg-slate-800/40 shimmer-glow opacity-25"></div>
+          <div className="flex-1 rounded-lg bg-slate-850/20"></div>
+          <div className="flex-1 rounded-lg bg-slate-850/20"></div>
+        </div>
+
+        {/* Chart placeholder */}
+        <div className="w-full h-72 rounded-2xl border border-slate-800 bg-ocean-950/40 relative overflow-hidden flex flex-col justify-end p-6 space-y-4">
+          <div className="absolute inset-0 shimmer-glow opacity-20"></div>
+          {/* Mock vertical grid lines */}
+          <div className="flex justify-between items-end h-40 opacity-10 border-b border-slate-800 pb-2">
+            <div className="w-1 h-32 bg-slate-700"></div>
+            <div className="w-1 h-24 bg-slate-700"></div>
+            <div className="w-1 h-36 bg-slate-700"></div>
+            <div className="w-1 h-16 bg-slate-700"></div>
+            <div className="w-1 h-28 bg-slate-700"></div>
+          </div>
+        </div>
+
+        {/* Insight Card Placeholder */}
+        <div className="w-full rounded-2xl border border-slate-800 bg-ocean-950/40 p-5 space-y-4 relative overflow-hidden">
+          <div className="absolute inset-0 shimmer-glow opacity-30"></div>
+          
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-800/60"></div>
+            <div className="space-y-2 flex-1">
+              <div className="w-48 h-4 bg-slate-800/60 rounded"></div>
+              <div className="w-32 h-3 bg-slate-800/40 rounded"></div>
+            </div>
+          </div>
+          
+          {/* Text lines */}
+          <div className="space-y-2.5 pt-4">
+            <div className="w-full h-3 bg-slate-850/50 rounded"></div>
+            <div className="w-full h-3 bg-slate-850/50 rounded"></div>
+            <div className="w-3/4 h-3 bg-slate-850/50 rounded"></div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

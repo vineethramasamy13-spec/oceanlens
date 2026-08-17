@@ -160,6 +160,23 @@
     box-shadow: none !important;
   }
 }
+/* Shimmering Pulse Loader for Skeleton states */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
 
-
-
+.shimmer-glow {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 32, 67, 0.45) 25%,
+    rgba(34, 211, 238, 0.15) 37%,
+    rgba(15, 32, 67, 0.45) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.8s infinite ease-in-out;
+}
