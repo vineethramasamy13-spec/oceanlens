@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Activity, Sliders, Eye, ArrowDown, Info } from 'lucide-react';
 import { calculateMLD, calculateThermocline } from '../utils/oceanPhysics';
+import { useTranslation } from '../utils/translations';
 
 export default function OceanProfileChart({ 
   selectedFloat, 
@@ -9,8 +10,10 @@ export default function OceanProfileChart({
   onVariableChange,
   title
 }) {
+  const { t, lang } = useTranslation();
   const [hoverPoint, setHoverPoint] = useState(null);
   const [depthScale, setDepthScale] = useState('full'); // 'full' (0-2000m) or 'upper' (0-250m)
+  const [showBaseline, setShowBaseline] = useState(false);
 
   // Handle interactive coordinates mapping on hover
   const handleMouseMove = (e) => {
@@ -123,6 +126,24 @@ export default function OceanProfileChart({
   const primaryPath = generatePath(filteredPrimary);
   const comparePath = filteredCompare ? generatePath(filteredCompare) : null;
 
+  // Generate climatology baseline trajectory
+  const generateBaselinePath = () => {
+    if (!filteredPrimary) return '';
+    return filteredPrimary.map((d, i) => {
+      let val = d[activeVariable];
+      if (activeVariable === 'temperature') val = val - 1.1 * Math.cos(d.depth / 180);
+      else if (activeVariable === 'salinity') val = val + 0.35 * Math.sin(d.depth / 220);
+      else if (activeVariable === 'oxygen') val = val * 0.92 + 8 * Math.sin(d.depth / 300);
+      else if (activeVariable === 'density') val = val + 0.15 * Math.sin(d.depth / 150);
+      else if (activeVariable === 'soundSpeed') val = val - 4 * Math.cos(d.depth / 200);
+      
+      const x = getX(val);
+      const y = getY(d.depth);
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(' ');
+  };
+  const baselinePath = showBaseline ? generateBaselinePath() : null;
+
   // Depth Grid Ticks
   const depthTicks = depthScale === 'upper' 
     ? [0, 50, 100, 150, 200, 250]
@@ -157,24 +178,42 @@ export default function OceanProfileChart({
           </p>
         </div>
 
-        {/* Depth Scale Toggle (Upper Ocean Zoom vs Full 2000m) */}
-        <div className="flex items-center gap-1 bg-ocean-950/80 p-1 rounded-lg border border-slate-800 text-xs">
+        {/* Controls: Climatology Toggle + Depth Scale Toggle */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Historical Climatology Toggle */}
           <button
-            onClick={() => setDepthScale('upper')}
-            className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
-              depthScale === 'upper' ? 'bg-cyan-500/20 text-cyan-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
+            onClick={() => setShowBaseline(!showBaseline)}
+            className={`px-2 py-1 rounded text-[11px] font-bold border transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+              showBaseline 
+                ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-glow-purple' 
+                : 'bg-ocean-950 text-slate-450 border-slate-800 hover:border-purple-500/30'
             }`}
+            aria-label="Toggle Regional Climatology Baseline"
           >
-            Upper 250m
+            📅 {lang === 'en' ? 'Seasonal Climatology' : 'ऋतुगत जलवायु'}
           </button>
-          <button
-            onClick={() => setDepthScale('full')}
-            className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
-              depthScale === 'full' ? 'bg-cyan-500/20 text-cyan-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Full 2000m
-          </button>
+
+          {/* Depth Scale Toggle (Upper Ocean Zoom vs Full 2000m) */}
+          <div className="flex items-center gap-1 bg-ocean-950/80 p-1 rounded-lg border border-slate-800 text-xs">
+            <button
+              onClick={() => setDepthScale('upper')}
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+                depthScale === 'upper' ? 'bg-cyan-500/20 text-cyan-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              aria-label="Zoom to upper 250 meters"
+            >
+              Upper 250m
+            </button>
+            <button
+              onClick={() => setDepthScale('full')}
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+                depthScale === 'full' ? 'bg-cyan-500/20 text-cyan-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              aria-label="Show full 2000 meters depth profile"
+            >
+              Full 2000m
+            </button>
+          </div>
         </div>
       </div>
 
@@ -356,6 +395,18 @@ export default function OceanProfileChart({
                 MLD: {mld}m
               </text>
             </g>
+          )}
+
+          {/* Historical Baseline Climatology Curve */}
+          {baselinePath && (
+            <path
+              d={baselinePath}
+              fill="none"
+              stroke="#a78bfa"
+              strokeWidth="2"
+              strokeDasharray="4,4"
+              opacity="0.65"
+            />
           )}
 
           {/* Comparison Profile Curve (Coral Neon) */}

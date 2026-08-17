@@ -10,10 +10,13 @@ import MarineLifeVisualizer from '../components/MarineLifeVisualizer';
 import SonarAcousticRefractor from '../components/SonarAcousticRefractor';
 import { ARGO_FLOATS } from '../data/argoDataset';
 import { processOceanQuery } from '../utils/aiQueryEngine';
+import { useTranslation } from '../utils/translations';
 
 export default function AiExplorer({ onSelectFloatGlobal }) {
+  const { t, lang } = useTranslation();
   const [currentQuery, setCurrentQuery] = useState('Show temperature in Bay of Bengal');
   const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [activeVariable, setActiveVariable] = useState('temperature');
   const [showTSDiagram, setShowTSDiagram] = useState(false);
@@ -35,6 +38,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
 
   const handleSearch = async (queryText) => {
     setIsLoading(true);
+    setSearchError(null);
     setCurrentQuery(queryText);
 
     try {
@@ -43,6 +47,7 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
       setActiveVariable(result.variable || 'temperature');
     } catch (err) {
       console.error('Search error:', err);
+      setSearchError(err.message || 'The oceanographic database is unreachable. Please verify your internet connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -52,11 +57,13 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
     setActiveVariable(newVar);
     if (!analysisResult) return;
     setIsLoading(true);
+    setSearchError(null);
     try {
       const updated = await processOceanQuery(`Show ${newVar} in ${analysisResult.regionName}`, analysisResult);
       setAnalysisResult(updated);
     } catch (e) {
       console.error(e);
+      setSearchError(e.message || 'Failed to update measurement variables. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -65,12 +72,14 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
   const handleSelectFloat = async (float) => {
     if (!analysisResult) return;
     setIsLoading(true);
+    setSearchError(null);
     try {
       const updated = await processOceanQuery(`Show ${activeVariable} for float #${float.wmo} in ${float.region}`, analysisResult);
       setAnalysisResult(updated);
       if (onSelectFloatGlobal) onSelectFloatGlobal(float);
     } catch (e) {
       console.error(e);
+      setSearchError(e.message || 'Failed to select the requested float profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +95,23 @@ export default function AiExplorer({ onSelectFloatGlobal }) {
         isLoading={isLoading}
         currentContext={analysisResult}
       />
+
+      {/* 1b. Premium Glass-Panel Error Banner */}
+      {searchError && (
+        <div className="glass-panel p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-350 flex items-center justify-between text-xs sm:text-sm animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2">
+            <span className="text-base select-none shrink-0">⚠️</span>
+            <span><strong>{lang === 'hi' ? 'खोज त्रुटि' : 'Query Failure'}:</strong> {searchError}</span>
+          </div>
+          <button
+            onClick={() => setSearchError(null)}
+            className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-200 font-bold transition-all text-xs focus-visible:ring-2 focus-visible:ring-rose-455 focus-visible:outline-none shrink-0"
+            aria-label="Dismiss Error"
+          >
+            {lang === 'hi' ? 'खारिज करें' : 'Dismiss'}
+          </button>
+        </div>
+      )}
 
       {/* 2. Main Visualizations Split Dashboard */}
       {analysisResult ? (

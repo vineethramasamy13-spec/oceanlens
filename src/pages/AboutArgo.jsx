@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Info, Waves, Radio, Activity, Compass, ShieldCheck, Cpu, ArrowDown, ArrowUp, RefreshCw, Sparkles, BookOpen } from 'lucide-react';
+import { Info, Waves, Radio, Activity, Compass, ShieldCheck, Cpu, ArrowDown, ArrowUp, RefreshCw, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from '../utils/translations';
 
 export default function AboutArgo() {
+  const { t, lang } = useTranslation();
   const [activeCycleStep, setActiveCycleStep] = useState(3);
 
   const cycleSteps = [
@@ -189,6 +191,116 @@ export default function AboutArgo() {
         <div className="glass-panel p-5 rounded-2xl border border-slate-800">
           <div className="text-2xl sm:text-3xl font-black text-purple-400 font-mono">100% Free</div>
           <div className="text-xs text-slate-400 mt-1">Open Access to Humanity</div>
+        </div>
+      </div>
+
+      {/* Smart India Hackathon 2026 (SIH) Technical Addendum */}
+      <div className="pt-8 border-t border-slate-800 space-y-6">
+        <div className="text-center max-w-2xl mx-auto mb-4">
+          <span className="text-[10px] px-2.5 py-1 rounded bg-teal-500/10 border border-teal-500/30 text-teal-300 font-bold uppercase tracking-wider">
+            {lang === 'en' ? 'SIH 2026 Evaluation Suite' : 'एसआईएच 2026 मूल्यांकन सुइट'}
+          </span>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mt-2">
+            {lang === 'en' ? 'Technical Architecture & Domain Alignment' : 'तकनीकी वास्तुकला और डोमेन संरेखण'}
+          </h2>
+          <p className="text-xs text-slate-400 mt-1 font-sans">
+            {lang === 'en' 
+              ? 'Detailed breakdown of system pipelines, dataset sources, and MoES/INCOIS problem statement alignment.' 
+              : 'सिस्टम पाइपलाइन, डेटासेट स्रोतों और पृथ्वी विज्ञान मंत्रालय/INCOIS समस्या विवरण संरेखण का विस्तृत विवरण।'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Card 1: Data Pipeline */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-cyan-400" />
+              <h3 className="text-sm font-bold text-white uppercase tracking-tight">
+                {lang === 'en' ? 'System Pipeline' : 'सिस्टम पाइपलाइन'}
+              </h3>
+            </div>
+            <div className="relative pl-4 border-l-2 border-cyan-500/30 space-y-4 font-mono text-[10.5px] text-slate-300">
+              <div>
+                <span className="text-cyan-400 font-bold block">1. Robotic Float Cast:</span>
+                Autonomous CTD sensor records profiles down to 2000m.
+              </div>
+              <div>
+                <span className="text-cyan-400 font-bold block">2. Satellite Transmission:</span>
+                Iridium SBD links transmit coordinates to GDAC hubs.
+              </div>
+              <div>
+                <span className="text-cyan-400 font-bold block">3. Weather & Ocean API:</span>
+                Open-Meteo satellite stream retrieves active ocean state.
+              </div>
+              <div>
+                <span className="text-cyan-400 font-bold block">4. LLM Query Engine:</span>
+                Retrieval-Augmented Generation parses queries with Groq LLaMA.
+              </div>
+              <div>
+                <span className="text-cyan-400 font-bold block">5. OceanLens Dashboard:</span>
+                Visual analytics and real-time fisheries advisories rendered.
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: SIH Alignment Matrix */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-teal-400" />
+              <h3 className="text-sm font-bold text-white uppercase tracking-tight">
+                {lang === 'en' ? 'SIH Alignment Matrix' : 'एसआईएच संरेखण मैट्रिक्स'}
+              </h3>
+            </div>
+            <div className="space-y-3.5 text-xs text-slate-350 leading-relaxed font-sans">
+              <div className="bg-ocean-900/60 p-2.5 rounded-lg border border-slate-800">
+                <strong>{lang === 'en' ? 'Data Honesty Criteria' : 'डेटा ईमानदारी मानदंड'}:</strong>
+                <p className="text-[11px] text-slate-400 mt-1 font-sans">
+                  {lang === 'en'
+                    ? 'Explicit visual badges distinguishing live satellite values from representative static profile fallbacks.'
+                    : 'प्रतिनिधि स्थिर प्रोफाइल से लाइव उपग्रह मूल्यों को अलग करने वाले स्पष्ट विजुअल बैज।'}
+                </p>
+              </div>
+              <div className="bg-ocean-900/60 p-2.5 rounded-lg border border-slate-800">
+                <strong>{lang === 'en' ? 'Socio-Economic Impact' : 'सामाजिक-आर्थिक प्रभाव'}:</strong>
+                <p className="text-[11px] text-slate-400 mt-1 font-sans">
+                  {lang === 'en'
+                    ? 'Fisheries bio-suitability engine helps fishermen identify optimal fishing zones based on MLD/SST.'
+                    : 'मत्स्य पालन जैव-अनुकूलता इंजन मछुआरों को MLD/SST के आधार पर इष्टतम क्षेत्र खोजने में मदद करता है।'}
+                </p>
+              </div>
+              <div className="bg-ocean-900/60 p-2.5 rounded-lg border border-slate-800">
+                <strong>{lang === 'en' ? 'National Accessibility' : 'राष्ट्रीय पहुंच'}:</strong>
+                <p className="text-[11px] text-slate-400 mt-1 font-sans">
+                  {lang === 'en'
+                    ? 'Dynamic bilingual English-Hindi translation hook delivers coastal accessibility to local operators.'
+                    : 'द्विभाषी अंग्रेजी-हिंदी अनुवाद स्थानीय ऑपरेटरों को तटीय पहुंच प्रदान करता है।'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Data Provenance Statement */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-purple-400" />
+              <h3 className="text-sm font-bold text-white uppercase tracking-tight">
+                {lang === 'en' ? 'Provenance Statement' : 'स्रोत प्रमाण वक्तव्य'}
+              </h3>
+            </div>
+            <div className="space-y-3 text-xs text-slate-350 leading-relaxed font-sans">
+              <p>
+                {lang === 'en'
+                  ? 'All coordinates, float identification codes (WMO), and deep vertical profiles in this app are seeded representative hydrographic casts derived from official INCOIS Argo global data assemblies.'
+                  : 'इस ऐप में सभी निर्देशांक, फ्लोट पहचान कोड (WMO), और गहरी ऊर्ध्वाधर प्रोफाइल आधिकारिक INCOIS आरगो डेटासेट से प्राप्त सीडेड प्रतिनिधि प्रोफाइल हैं।'}
+              </p>
+              <div className="bg-purple-950/20 border border-purple-500/30 p-3 rounded-lg text-[11px] font-mono text-purple-300">
+                <strong>{lang === 'en' ? 'Academic Source Ref' : 'अकादमिक स्रोत संदर्भ'}:</strong>
+                <p className="mt-1 leading-normal">
+                  Argo (2026). Argo float dataset. CNRS-INSU, GOOS, WCRP. WMO standard observations metadata assembled under INCOIS GDAC parameters.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

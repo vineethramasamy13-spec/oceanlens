@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
-import { X, Printer, Download, FileText, CheckCircle2, ShieldCheck, Waves, Calendar, Compass, Share2 } from 'lucide-react';
+import { X, Printer, Download, FileText, CheckCircle2, ShieldCheck, Waves, Calendar, Compass } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { analyzeOceanAnomalies } from '../utils/oceanAnomalies';
+import { useTranslation } from '../utils/translations';
 
 export default function ReportGeneratorModal({ isOpen, onClose, analysisResult }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (isOpen) {
       try {
@@ -37,11 +41,13 @@ export default function ReportGeneratorModal({ isOpen, onClose, analysisResult }
     provenance,
     totalObservations,
     variableTitle,
-    unit
+    unit,
+    liveEarthData
   } = analysisResult;
 
   const reportId = `OL-REP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
   const generationDate = new Date().toUTCString();
+  const isLive = liveEarthData?.isLive ?? false;
 
   const handlePrint = () => {
     window.print();
@@ -257,12 +263,61 @@ ${keyHighlights.map(h => `- ${h}`).join('\n')}
             </div>
           </div>
 
-          {/* Section 4: Data Provenance & Academic Citation */}
+          {/* Section 4: AI Anomaly Alerts & Fisheries Advisory (SIH Decision Layer) */}
+          {selectedFloat && (
+            <div>
+              <h2 className="text-base font-bold text-white border-l-4 border-cyan-400 pl-2.5 mb-2.5">
+                4. AI Anomaly Assessment & Coastal Advisories
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="p-4 rounded-xl bg-ocean-900/40 border border-slate-800 space-y-2">
+                  <strong className="text-slate-400 font-mono block">Hazard Flags:</strong>
+                  {(() => {
+                    const anomalies = analyzeOceanAnomalies(selectedFloat.profile);
+                    return anomalies.alerts.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {anomalies.alerts.map(a => (
+                          <div key={a.id} className="text-rose-450 text-[11px]">
+                            ⚠️ <strong>{a.title}:</strong> {a.description}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-emerald-450 text-[11px]">✓ No active marine heatwaves, freshening, or benthic hypoxia warnings in this sector.</div>
+                    );
+                  })()}
+                </div>
+                <div className="p-4 rounded-xl bg-ocean-900/40 border border-slate-800 space-y-2">
+                  <strong className="text-slate-400 font-mono block">Fisheries Suitability Index:</strong>
+                  {(() => {
+                    const anomalies = analyzeOceanAnomalies(selectedFloat.profile);
+                    return (
+                      <div className="space-y-1 font-mono text-[11px] leading-relaxed">
+                        <div>• Pelagic (Tuna): <strong className="text-cyan-300">{anomalies.fisheriesAdvisory.pelagicSuitability}</strong> - {anomalies.fisheriesAdvisory.pelagicDescription}</div>
+                        <div className="mt-1.5 border-t border-slate-800/80 pt-1.5">• Demersal (Crabs/Shrimp): <strong className="text-teal-300">{anomalies.fisheriesAdvisory.demersalSuitability}</strong> - {anomalies.fisheriesAdvisory.demersalDescription}</div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Section 5: Data Provenance & Academic Citation */}
           <div className="pt-3 border-t border-slate-800 text-xs text-slate-400 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <ShieldCheck className="w-4 h-4 text-teal-400" />
+              <div className="flex items-center flex-wrap gap-2 text-slate-350">
+                <ShieldCheck className="w-4 h-4 text-teal-400 shrink-0" />
                 <span><strong>Data Assembly:</strong> {provenance.source}</span>
+                {isLive ? (
+                  <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.2 rounded text-[9px] font-bold font-mono">
+                    Live Feed
+                  </span>
+                ) : (
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded text-[9px] font-bold font-mono">
+                    Estimated Data
+                  </span>
+                )}
               </div>
               <span className="font-mono text-teal-400">{provenance.qualityStatus}</span>
             </div>

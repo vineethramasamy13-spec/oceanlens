@@ -232,7 +232,8 @@ export async function processOceanQuery(queryText, previousContext = null) {
     groqPowered, groqMechanism,
     liveEarthData,
     provenance: {
-      source: 'ARGO GDAC (INCOIS / Coriolis / CSIRO / NOAA / JAMSTEC / BSH) + Copernicus Marine + NOAA',
+      source: `ARGO Representative Profiles + ${liveEarthData?.source || 'Offline Satellite Model'}`,
+      isLive: liveEarthData?.isLive ?? false,
       aiEngine: groqPowered ? `Groq LLaMA-3 70B (llama3-70b-8192) — Grounded Ocean Intelligence` : 'Physics-Based Fallback Engine',
       wmoIds: activeFloatsList.map(f => f.wmo),
       floatNames: activeFloatsList.map(f => f.name),

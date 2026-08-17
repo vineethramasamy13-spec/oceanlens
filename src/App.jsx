@@ -97,7 +97,7 @@ export default function App() {
 
           <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400">
             <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-            <span>Real Earth Data • INCOIS GDAC • Copernicus Marine • GOOS Verified</span>
+            <span>Live Sea Surface Data • Representative ARGO Profiles • Copernicus & GOOS Reference</span>
           </div>
 
         </div>

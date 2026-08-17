@@ -41,7 +41,8 @@ export async function fetchLiveRealOceanData(latitude, longitude) {
       waveHeight: data.current?.wave_height ?? 1.2,
       currentVelocity: data.current?.ocean_current_velocity ?? 1.4,
       currentDirection: data.current?.ocean_current_direction ?? 45,
-      source: 'Copernicus Marine / NOAA Real-Time Satellite Analysis'
+      source: 'Copernicus Marine / NOAA Real-Time Satellite Analysis',
+      isLive: true
     };
   } catch (error) {
     console.warn('Fallback to live calibrated ocean model:', error.message);
@@ -55,7 +56,8 @@ export async function fetchLiveRealOceanData(latitude, longitude) {
       waveHeight: 1.3,
       currentVelocity: 1.2,
       currentDirection: 60,
-      source: 'NOAA OISST v2.1 Real-Time Blend'
+      source: 'Estimated (offline fallback — live API unreachable)',
+      isLive: false
     };
   }
 }

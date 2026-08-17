@@ -259,7 +259,7 @@ export default function OceanMap({
           
           <div class="text-[10px] text-slate-400 flex items-center justify-between">
             <span>Sensors: CTD</span>
-            <span class="text-teal-400">● 100% QC</span>
+            <span class="bg-amber-500/15 text-amber-450 border border-amber-500/30 px-1 py-0.2 rounded font-bold text-[8.5px] font-mono">Estimated Profile</span>
           </div>
         </div>
       `;

@@ -1,6 +1,7 @@
 /**
  * Comprehensive Global ARGO Float Dataset — All 5 Earth Oceans
- * WMO-registered floats calibrated to GDAC / INCOIS / Coriolis / CSIRO / NOAA standards.
+ * Representative float data modeled on realistic regional profiles, not live WMO records.
+ * Used for simulation and validation under offline/hybrid configurations.
  * Covers: Pacific, Atlantic, Indian, Arctic, Southern Oceans.
  */
 

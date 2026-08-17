@@ -1,14 +1,18 @@
-import React from 'react';
-import { Compass, Waves, Map as MapIcon, Database, FileText, Info, Radio, Activity, Sparkles, MessageSquare, Sun, Moon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, X, Compass, Waves, Map as MapIcon, Database, FileText, Info, Radio, Activity, Sparkles, MessageSquare } from 'lucide-react';
+import { useTranslation } from '../utils/translations';
 
 export default function Navbar({ activePage, setActivePage, activeFloatsCount = 8, onQuickReport }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t, lang, setLanguage } = useTranslation();
+
   const navItems = [
-    { id: 'ai-explorer', label: 'AI Explorer', icon: Sparkles, badge: 'Core' },
-    { id: 'ai-chatbot', label: 'AI Chatbot', icon: MessageSquare, badge: 'New' },
-    { id: 'ocean-map', label: 'Ocean Map', icon: MapIcon },
-    { id: 'data-explorer', label: 'Data Explorer', icon: Database },
-    { id: 'ocean-reports', label: 'Reports', icon: FileText },
-    { id: 'about-argo', label: 'About ARGO', icon: Info },
+    { id: 'ai-explorer', label: t('nav_explorer'), icon: Sparkles, badge: 'Core' },
+    { id: 'ai-chatbot', label: t('nav_chatbot'), icon: MessageSquare, badge: 'New' },
+    { id: 'ocean-map', label: t('nav_map'), icon: MapIcon },
+    { id: 'data-explorer', label: t('nav_data'), icon: Database },
+    { id: 'ocean-reports', label: t('nav_reports'), icon: FileText },
+    { id: 'about-argo', label: t('nav_about'), icon: Info },
   ];
 
   return (
@@ -40,12 +44,12 @@ export default function Navbar({ activePage, setActivePage, activeFloatsCount = 
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-wide hidden sm:block">
-                Ask the Ocean. Understand the Data.
+                {lang === 'en' ? 'Ask the Ocean. Understand the Data.' : 'सागर से पूछें। डेटा को समझें।'}
               </p>
             </div>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links (Desktop) */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -54,11 +58,12 @@ export default function Navbar({ activePage, setActivePage, activeFloatsCount = 
                 <button
                   key={item.id}
                   onClick={() => setActivePage(item.id)}
-                  className={`flex items-center gap-1.5 px-2 py-1.5 lg:px-3 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-2 py-1.5 lg:px-3 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-cyan-450 focus-visible:outline-none ${
                     isActive
                       ? 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20 dark:border-cyan-500/30 shadow-sm dark:shadow-glow-cyan'
                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-ocean-850/60'
                   }`}
+                  aria-label={item.label}
                 >
                   <Icon className={`w-3.5 h-3.5 lg:w-4 lg:h-4 hidden xl:block ${isActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-450 dark:text-slate-400'}`} />
                   <span>{item.label}</span>
@@ -72,54 +77,112 @@ export default function Navbar({ activePage, setActivePage, activeFloatsCount = 
             })}
           </nav>
  
-          {/* Live Telemetry Status & Quick Action */}
-          <div className="flex items-center gap-3">
-            {/* Live Floats Telemetry Badge */}
+          {/* Controls & Quick Actions (Desktop) */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Live Telemetry Status */}
             <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-ocean-900 border border-slate-200 dark:border-cyan-500/20 text-xs text-slate-600 dark:text-slate-300">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
               </span>
-              <span className="font-mono text-cyan-600 dark:text-cyan-300 font-semibold">{activeFloatsCount} Floats</span>
+              <span className="font-mono text-cyan-600 dark:text-cyan-300 font-semibold">{activeFloatsCount} {lang === 'en' ? 'Floats' : 'फ्लोट्स'}</span>
               <span className="text-slate-400 dark:text-slate-500">|</span>
-              <span className="text-teal-600 dark:text-teal-400 font-mono text-[11px]">GDAC Live</span>
+              <span className="text-teal-600 dark:text-teal-400 font-mono text-[11px]">{lang === 'en' ? 'QC Active' : 'सत्यापित'}</span>
             </div>
+
+            {/* Bilingual Translation Switcher */}
+            <button
+              onClick={() => setLanguage(lang === 'en' ? 'hi' : 'en')}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-ocean-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-cyan-400 text-xs font-bold font-mono transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+              aria-label="Change Language / भाषा बदलें"
+            >
+              {lang === 'en' ? 'हिन्दी' : 'EN'}
+            </button>
 
             {/* Quick Report Button */}
             <button
               onClick={onQuickReport}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-ocean-950 dark:text-ocean-950 transition-all shadow-sm dark:shadow-glow-cyan"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-ocean-950 dark:text-ocean-950 transition-all shadow-sm dark:shadow-glow-cyan focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+              aria-label="Generate Analysis Report"
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>Report</span>
+              <span>{t('nav_quick_report')}</span>
+            </button>
+          </div>
+
+          {/* Hamburger Menu & Language Button for Mobile Viewports */}
+          <div className="flex md:hidden items-center gap-2">
+            <button
+              onClick={() => setLanguage(lang === 'en' ? 'hi' : 'en')}
+              className="px-2 py-1 rounded bg-slate-100 dark:bg-ocean-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 hover:text-cyan-400 text-[11px] font-bold font-mono"
+              aria-label="Change Language"
+            >
+              {lang === 'en' ? 'हिन्दी' : 'EN'}
+            </button>
+
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-ocean-900 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+              aria-label="Toggle Navigation Menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
 
         </div>
+      </div>
 
-         {/* Mobile Navigation Bar */}
-        <div className="flex md:hidden overflow-x-auto py-2 border-t border-slate-200 dark:border-slate-800 gap-1 scrollbar-none">
+      {/* Mobile Dropdown Panel */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-ocean-950/95 py-3 px-3 flex flex-col gap-1.5 animate-in slide-in-from-top-4 duration-150 relative z-40 backdrop-blur-md">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setActivePage(item.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
+                onClick={() => {
+                  setActivePage(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold border transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
                   isActive
-                    ? 'bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20 dark:border-cyan-500/40'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/20 dark:border-cyan-500/30'
+                    : 'text-slate-600 dark:text-slate-300 border-transparent hover:bg-slate-100 dark:hover:bg-ocean-900'
                 }`}
+                aria-label={item.label}
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-2">
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className="text-[8px] uppercase px-1.5 py-0.2 rounded bg-cyan-600 dark:bg-cyan-500 text-white dark:text-ocean-950 font-bold">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
+          
+          {/* Quick Report Button Mobile */}
+          <button
+            onClick={() => {
+              onQuickReport();
+              setIsMobileMenuOpen(false);
+            }}
+            className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 to-teal-500 text-ocean-950 shadow-glow-cyan"
+            aria-label="Generate Analysis Report"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>{t('nav_quick_report')}</span>
+          </button>
         </div>
-
-      </div>
+      )}
     </header>
   );
 }
